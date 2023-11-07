@@ -30,6 +30,7 @@ class GPT_conversation:
         Update as of Nov. 6th, 2023: 
         Models gpt-4-turbo added as: gpt-4-1106-preview
         gpt-3-turbo updated as: gpt-3.5-turbo-1106
+        TODO: Make use of these
         """
         if choice == 4:
             return 'gpt-4'
