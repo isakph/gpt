@@ -27,6 +27,9 @@ class GPT_conversation:
         """
         Accepts 3.5 or 4 as choice and returns either 'gpt-3.5-turbo' or 'gpt-4'.
         3.5 is the default value simply because it is cheaper to run.
+        Update as of Nov. 6th, 2023: 
+        Models gpt-4-turbo added as: gpt-4-1106-preview
+        gpt-3-turbo updated as: gpt-3.5-turbo-1106
         """
         if choice == 4:
             return 'gpt-4'
@@ -35,7 +38,7 @@ class GPT_conversation:
 
     def __get_first_response(self, 
                         message: str = None,
-                        print_to_terminal: bool = True # might add some other way of doing this
+                        print_to_terminal: bool = True # might add some other output option
                         ) -> List[Dict[str, str]]:
         """
         Asks the user to enter a prompt during the creation of the ChatCompletion. 
@@ -69,8 +72,6 @@ class GPT_conversation:
         The conversation keeps going until the user types '0'.
         The user can press 1 to initiate a new conversation
         """
-        
-        # convo = [first_response['choices'][0]]
         convo = self.__get_first_response()
         
         keep_going = True
@@ -85,23 +86,34 @@ class GPT_conversation:
             except ValueError:
                 pass # Anything other than 0 or 1 is used to create a new chat completion.
             
-            convo.append({"content": next_message, "role": "user"})
-            print("taking a look at 'convo' before creating a second response:\n", convo)
+            convo.append({"role": "user", "content": next_message})
+            print("taking a look at 'convo' before creating a second response:\n", convo) # looks good, but "'user' is unexpected" is the error
 
             response = openai.ChatCompletion.create(
                 model = self._model,
                 messages = convo # TODO :I pass something wrong along somewhere. It's probably from when I created convo object originally.:
                 # This was the error: openai.error.InvalidRequestError: Additional properties are not allowed ('finish_reason', 'index', 'message' were unexpected) - 'messages.0'
             )
-
-            print(response['choices'][0]['message']['content']) # this might have to be tweaked as well
-            convo.append(response['choices'][0])
+            answer = response['choices'][0]['message']['content']
+            print(answer) # this might have to be tweaked as well
+            convo.append({"role": "assistant", "content": answer}) # I'm appending a list, right?
         
 
 def main(options = None):
     gpt_model = GPT_conversation(options)
     gpt_model.hold_conversation()
-
+    # response = openai.ChatCompletion.create(
+    #     model="gpt-3.5-turbo",
+    #     messages=[
+    #         {"role": "system", "content": "You are a helpful assistant."},
+    #         {"role": "user", "content": "Who won the world series in 2020?"},
+    #         {"role": "assistant", "content": "The Los Angeles Dodgers won the World Series in 2020."},
+    #         {"role": "user", "content": "Where was it played?"}
+    #     ]
+    # )
+    # print(response)
+    # answer = response['choices'][0]['message']['content']
+    # print(answer)
 
 if __name__ == "__main__":
     options = {'model': 3.5}
